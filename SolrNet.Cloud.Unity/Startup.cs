@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using SolrNet.Utils;
+using IContainer = SolrNet.Utils.IContainer;
 using Parent = SolrNet.Startup;
 
 namespace SolrNet.Cloud
