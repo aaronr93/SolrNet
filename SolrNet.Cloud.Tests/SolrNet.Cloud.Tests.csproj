@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>SolrNet.Cloud.Tests</RootNamespace>
     <AssemblyName>SolrNet.Cloud.Tests</AssemblyName>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <RestorePackages>true</RestorePackages>
@@ -102,6 +102,10 @@
     <ProjectReference Include="..\AutofacContrib.SolrNet.SolrCloud\AutofacContrib.SolrNet.SolrCloud.csproj">
       <Project>{ac8f4b0a-6dcd-45f9-a83f-b6ba69fd553e}</Project>
       <Name>AutofacContrib.SolrNet.SolrCloud</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\AutofacContrib.SolrNet\AutofacContrib.SolrNet.csproj">
+      <Project>{931ceb14-556f-4893-a8d9-c7c6daca444f}</Project>
+      <Name>AutofacContrib.SolrNet</Name>
     </ProjectReference>
     <ProjectReference Include="..\SolrNet.Cloud.Unity\SolrNet.Cloud.Unity.csproj">
       <Project>{63538cf2-62c5-4f5a-99b2-9f14896afb98}</Project>
