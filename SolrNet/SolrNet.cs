@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Microsoft.Practices.ServiceLocation;
 using SolrNet.Impl;
 using SolrNet.Impl.DocumentPropertyVisitors;
 using SolrNet.Impl.FacetQuerySerializers;
@@ -44,13 +45,13 @@ namespace SolrNet
             IReadOnlyMappingManager mapper = new MemoizingMappingManager(new AttributesMappingManager());
             ISolrDocumentPropertyVisitor visitor = new DefaultDocumentVisitor(mapper, fieldParser);
 
-            ISolrDocumentResponseParser<T> parser;
-            if (typeof (T) == typeof (Dictionary<string, object>))
-                parser = (ISolrDocumentResponseParser<T>) new SolrDictionaryDocumentResponseParser(fieldParser);
-            else
-                parser = new SolrDocumentResponseParser<T>(mapper, visitor, new SolrDocumentActivator<T>());
+            //ISolrDocumentResponseParser<T> parser;
+            //if (typeof (T) == typeof (Dictionary<string, object>))
+            //    parser = (ISolrDocumentResponseParser<T>) new SolrDictionaryDocumentResponseParser(fieldParser);
+            //else
+            //    parser = new SolrDocumentResponseParser<T>(mapper, visitor, new SolrDocumentActivator<T>());
 
-            ISolrAbstractResponseParser<T> resultParser = new DefaultResponseParser<T>(parser);
+            ISolrAbstractResponseParser<T> resultParser = ServiceLocator.Current.GetInstance<ISolrAbstractResponseParser<T>>();
 
             ISolrFieldSerializer fieldSerializer = new DefaultFieldSerializer();
             ISolrQuerySerializer querySerializer = new DefaultQuerySerializer(fieldSerializer);

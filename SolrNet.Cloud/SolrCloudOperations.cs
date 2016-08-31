@@ -11,6 +11,10 @@ namespace SolrNet.Cloud {
         public SolrCloudOperations(ISolrCloudStateProvider cloudStateProvider, ISolrOperationsProvider operationsProvider, bool isPostConnection = false)
             : base(cloudStateProvider, operationsProvider, isPostConnection) { }
 
+        public SolrCloudOperations(ISolrCloudStateProvider cloudStateProvider, ISolrOperationsProvider operationsProvider, ICollectionResolver<T> collectionResolver)
+            : base(cloudStateProvider, operationsProvider, isPostConnection: collectionResolver.IsPostConnection, collectionName: collectionResolver.CollectionName)
+        { }
+
         public SolrCloudOperations(ISolrCloudStateProvider cloudStateProvider, ISolrOperationsProvider operationsProvider, string collectionName)
             : base(cloudStateProvider, operationsProvider, isPostConnection: false, collectionName: collectionName) { }
         public SolrCloudOperations(ISolrCloudStateProvider cloudStateProvider, ISolrOperationsProvider operationsProvider, string collectionName, bool isPostConnection = false) 

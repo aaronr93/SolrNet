@@ -42,13 +42,19 @@ namespace AutofacContrib.SolrNet {
     /// Configures SolrNet in an Autofac container
     /// </summary>
     public class SolrNetModule : Module {
+
+        private bool _commonComponentsOnly = false;
+
         protected override void Load(ContainerBuilder builder) {
-            if (!string.IsNullOrEmpty(ServerUrl))
+            if (!string.IsNullOrEmpty(ServerUrl)) {
                 RegisterSingleCore(builder);
-            else if (solrServers != null)
+            } else if (solrServers != null) {
                 RegisterMultiCore(builder);
-            else
+            } else if (_commonComponentsOnly) {
+                RegisterCommonComponents(builder);
+            } else {
                 throw new ConfigurationErrorsException("SolrNetModule Configurations Error!");
+            }
         }
 
         /// <summary>
@@ -57,6 +63,14 @@ namespace AutofacContrib.SolrNet {
         /// <param name = "serverUrl"></param>
         public SolrNetModule(string serverUrl) {
             ServerUrl = serverUrl;
+        }
+
+        /// <summary>
+        ///   Register a single-core server
+        /// </summary>
+        /// <param name = "serverUrl"></param>
+        public SolrNetModule() {
+            _commonComponentsOnly = true;
         }
 
         private readonly string ServerUrl;
