@@ -20,8 +20,8 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyDescription("HttpWebAdapters")]
 [assembly: AssemblyProduct("HttpWebAdapters")]
 [assembly: AssemblyCopyright("Copyright Mauricio Scheffer 2007-2015")]
-[assembly: AssemblyVersion("0.5.0.1002")]
-[assembly: AssemblyFileVersion("0.5.0.1002")]
+[assembly: AssemblyVersion("0.5.1.0001")]
+[assembly: AssemblyFileVersion("0.5.1.0001")]
 [assembly: AssemblyInformationalVersion("4758ae1c6550363fb060857db120ff3aed438052")]
 [assembly: AssemblyDelaySign(false)]
 

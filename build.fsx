@@ -10,7 +10,7 @@ open System.Xml.Linq
 open Fake
 open Fake.FileUtils
 
-let version = "0.5.0.1002"
+let version = "0.5.1.0001"
 let nugetVersion = "0.5.0-alpha2"
 let buildDir = "merged"
 let nugetDir = "nuget"

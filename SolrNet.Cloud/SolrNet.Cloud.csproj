@@ -64,6 +64,7 @@
     <Compile Include="CollectionsAdmin\SolrCollectionsAdmin.cs" />
     <Compile Include="CollectionsAdmin\ISolrCollectionsAdmin.cs" />
     <Compile Include="ICollectionResolver.cs" />
+    <Compile Include="ISolrCloudReplicaManager.cs" />
     <Compile Include="ISolrCloudStateProvider.cs" />
     <Compile Include="ISolrOperationsProvider.cs" />
     <Compile Include="MurMurHash3.cs" />

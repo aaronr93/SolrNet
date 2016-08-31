@@ -6,7 +6,7 @@ namespace SolrNet.Cloud {
     /// <summary>
     /// Solr cloud operations base
     /// </summary>
-    public abstract class SolrCloudOperationsBase<T> {
+    public abstract class SolrCloudOperationsBase<T> : ISolrCloudReplicaManager<T> {
         /// <summary>
         /// Is post connection
         /// </summary>
@@ -56,9 +56,8 @@ namespace SolrNet.Cloud {
         /// </summary>
         protected TResult PerformBasicOperation<TResult>(Func<ISolrBasicOperations<T>, TResult> operation, bool leader = false)
         {
-            var replicas = SelectReplicas(leader);
             var operations = operationsProvider.GetBasicOperations<T>(
-                replicas[random.Next(replicas.Count)].Url,
+                GetShardUrl(leader),
                 isPostConnection);
             if (operations == null)
                 throw new ApplicationException("Operations provider returned null.");
@@ -69,9 +68,9 @@ namespace SolrNet.Cloud {
         /// Perform operation
         /// </summary>
         protected TResult PerformOperation<TResult>(Func<ISolrOperations<T>, TResult> operation, bool leader = false) {
-            var replicas = SelectReplicas(leader);
+   
             var operations = operationsProvider.GetOperations<T>(
-                replicas[random.Next(replicas.Count)].Url,
+                GetShardUrl(leader),
                 isPostConnection);
             if (operations == null)
                 throw new ApplicationException("Operations provider returned null.");
@@ -81,7 +80,7 @@ namespace SolrNet.Cloud {
         /// <summary>
         /// Returns collection of replicas
         /// </summary>
-        private IList<SolrCloudReplica> SelectReplicas(bool leaders) {
+        public IList<SolrCloudReplica> SelectReplicas(bool leaders) {
             var state = cloudStateProvider.GetCloudState();
             if (state == null || state.Collections == null || state.Collections.Count == 0)
             {
@@ -104,6 +103,11 @@ namespace SolrNet.Cloud {
                 throw new ApplicationException("No appropriate node was selected to perform the operation.");
             }
             return replicas;
+        }
+
+        public string GetShardUrl(bool leader) {
+            var replicas = SelectReplicas(leader);
+            return replicas[random.Next(replicas.Count)].Url;
         }
     }
 }
