@@ -11,7 +11,7 @@ namespace SolrNet.Unity.Tests
     {
         [Test]
         public void TestSorlCloud() {
-            using (var provider = new SolrCloudStateProvider("10.26.11.30:9983")) {
+            using (var provider = new SolrCloudStateProvider("172.30.10.21:2181,172.30.10.22:2181,172.30.10.23:2181/solr")) {
                 CloudStartup.Init<TestEntity>(provider);
                 TestRoutine();
             }

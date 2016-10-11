@@ -1,11 +1,13 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace SolrNet.Cloud
 {
     /// <summary>
     /// Solr cloud state provider interface
     /// </summary>
-    public interface ISolrCloudStateProvider : IDisposable {
+    public interface ISolrCloudStateProvider : IDisposable, ISolrCloudReplicaManager
+    {
         /// <summary>
         /// Provider key
         /// </summary>

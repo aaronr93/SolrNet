@@ -62,6 +62,8 @@ namespace AutofacContrib.SolrNet.SolrCloud {
             container.RegisterInstance(cloudStateProvider).AsSelf().AsImplementedInterfaces();
 
             container.RegisterInstance<ISolrOperationsProvider>(new OperationsProvider()).AsSelf().AsImplementedInterfaces();
+            container.RegisterGeneric(typeof (DefaultCollectionResolver<>)).AsSelf().AsImplementedInterfaces();
+
             return container;
         }
         

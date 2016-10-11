@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 
 namespace SolrNet.Cloud {
     /// <summary>
     /// Solr cloud operations base
     /// </summary>
-    public abstract class SolrCloudOperationsBase<T> : ISolrCloudReplicaManager<T> {
+    public abstract class SolrCloudOperationsBase<T>: ISolrCloudReplicaManager<T>
+    {
         /// <summary>
         /// Is post connection
         /// </summary>
@@ -31,6 +33,7 @@ namespace SolrNet.Cloud {
         /// Random instance
         /// </summary>
         private readonly Random random;
+        
 
         /// <summary>
         /// Constructor
@@ -77,37 +80,14 @@ namespace SolrNet.Cloud {
             return operation(operations);
         }
 
-        /// <summary>
-        /// Returns collection of replicas
-        /// </summary>
-        public IList<SolrCloudReplica> SelectReplicas(bool leaders) {
-            var state = cloudStateProvider.GetCloudState();
-            if (state == null || state.Collections == null || state.Collections.Count == 0)
-            {
-                throw new ApplicationException("Didn't get any collection's state from zookeeper.");
-            }
-            if (collectionName != null && !state.Collections.ContainsKey(collectionName))
-            {
-                throw new ApplicationException(string.Format("Didn't get '{0}' collection state from zookeeper.", collectionName));
-            }
-            var collection = collectionName == null
-                ? state.Collections.Values.First()
-                : state.Collections[collectionName];
-            var replicas = collection.Shards.Values
-                .Where(shard => shard.IsActive)
-                .SelectMany(shard => shard.Replicas.Values)
-                .Where(replica => replica.IsActive && (!leaders || replica.IsLeader))
-                .ToList();
-            if (replicas.Count == 0)
-            {
-                throw new ApplicationException("No appropriate node was selected to perform the operation.");
-            }
-            return replicas;
+        public string GetShardUrl(bool leader)
+        {
+            return cloudStateProvider.GetShardUrl(leader, collectionName);
         }
 
-        public string GetShardUrl(bool leader) {
-            var replicas = SelectReplicas(leader);
-            return replicas[random.Next(replicas.Count)].Url;
+        public IList<SolrCloudReplica> SelectReplicas(bool leaders) {
+            return cloudStateProvider.SelectReplicas(leaders, collectionName);
         }
+        
     }
 }

@@ -1,11 +1,75 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using ZooKeeperNet;
 
 namespace SolrNet.Cloud.ZooKeeperClient
 {
-    public class SolrCloudStateProvider : ISolrCloudStateProvider, IWatcher
+    public abstract class SolrCloudStateProviderBase : ISolrCloudReplicaManager {
+
+        protected readonly Random _random;
+
+        public SolrCloudStateProviderBase() {
+            _random = new Random();
+        }
+
+        /// <summary>
+        /// Cluster state path constant
+        /// </summary>
+        public const string Aliases = "/aliases.json";
+
+        public IList<SolrCloudReplica> SelectReplicas(bool leaders, string collectionName = null) {
+            var derivedCollectionName = collectionName;
+            var state = GetCloudState();
+
+            if (state == null || state.Collections == null || state.Collections.Count == 0) {
+                throw new ApplicationException("Didn't get any collection's state from zookeeper.");
+            }
+
+            if (derivedCollectionName != null && state.Aliases.ContainsKey(collectionName)) {
+                derivedCollectionName = state.Aliases[collectionName];
+            }
+
+            if (derivedCollectionName != null && !state.Collections.ContainsKey(derivedCollectionName)) {
+
+                throw new ApplicationException(string.Format("Didn't get '{0}' collection state from zookeeper.", derivedCollectionName));
+            }
+
+
+            var collection = derivedCollectionName == null
+                ? state.Collections.Values.First()
+                : state.Collections[derivedCollectionName];
+            var replicas = collection.Shards.Values
+                                     .Where(shard => shard.IsActive)
+                                     .SelectMany(shard => shard.Replicas.Values)
+                                     .Where(replica => replica.IsActive && (!leaders || replica.IsLeader))
+                                     .ToList();
+
+            return replicas;
+        }
+
+        public string GetShardUrl(bool leader, string collectionName = null) {
+            var replicas = SelectReplicas(leader, collectionName);
+
+            if (leader && replicas.Count == 0) {
+                //
+                replicas = SelectReplicas(false, collectionName);
+            }
+
+            if (replicas.Count == 0) {
+                throw new ApplicationException(string.Format("No appropriate node was selected to perform the operation on collection {0} and leader = {1}", collectionName, leader));
+            }
+
+            return replicas[_random.Next(replicas.Count)].Url;
+        }
+
+        public abstract SolrCloudState GetCloudState();
+
+    }
+
+
+    public class SolrCloudStateProvider : SolrCloudStateProviderBase, ISolrCloudStateProvider, IWatcher
     {
         /// <summary>
         /// Cluster state path constant
@@ -35,11 +99,6 @@ namespace SolrNet.Cloud.ZooKeeperClient
         private bool isInitialized;
 
         /// <summary>
-        /// Actual cloud state
-        /// </summary>
-        private SolrCloudState state;
-
-        /// <summary>
         /// Object for lock
         /// </summary>
         private readonly object syncLock;
@@ -54,10 +113,12 @@ namespace SolrNet.Cloud.ZooKeeperClient
         /// </summary>
         private readonly string zooKeeperConnection;
 
+        private SolrCloudState state;
+
         /// <summary>
         /// Constuctor
         /// </summary>
-        public SolrCloudStateProvider(string zooKeeperConnection)
+        public SolrCloudStateProvider(string zooKeeperConnection):base()
         {
             if (string.IsNullOrEmpty(zooKeeperConnection))
                 throw new ArgumentNullException("zooKeeperConnection");
@@ -90,7 +151,7 @@ namespace SolrNet.Cloud.ZooKeeperClient
         /// Get cloud state
         /// </summary>
         /// <returns>Solr Cloud State</returns>
-        public SolrCloudState GetCloudState()
+        public override SolrCloudState GetCloudState()
         {
             return state;
         }
@@ -186,9 +247,12 @@ namespace SolrNet.Cloud.ZooKeeperClient
         {
             byte[] data;
 
+            byte[] aliases;
             try
             {
                 data = zooKeeper.GetData(ClusterState, true, null);
+                aliases = zooKeeper.GetData(Aliases, true, null);
+                
             }
             catch (KeeperException ex)
             {
@@ -197,8 +261,11 @@ namespace SolrNet.Cloud.ZooKeeperClient
 
             var collectionsState =
                 data != null
-                ? SolrCloudStateParser.Parse(Encoding.Default.GetString(data))
+                ? SolrCloudStateParser.Parse(Encoding.Default.GetString(data), Encoding.Default.GetString(aliases))
                 : new SolrCloudState(new Dictionary<string, SolrCloudCollection>());
+
+            
+
             return collectionsState;
         }
 
@@ -208,7 +275,7 @@ namespace SolrNet.Cloud.ZooKeeperClient
         private SolrCloudState GetExternalCollectionsState()
         {
             var resultState = new SolrCloudState(new Dictionary<string, SolrCloudCollection>());
-            List<string> children;
+            IEnumerable<string> children;
 
             try
             {

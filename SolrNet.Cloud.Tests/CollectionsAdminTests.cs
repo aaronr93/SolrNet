@@ -27,7 +27,7 @@ namespace SolrNet.Cloud.Tests
 
         private SolrCollectionsAdmin collections;
 
-        private const string ZOOKEEPER_CONNECTION = "127.0.0.1:9983";
+        private const string ZOOKEEPER_CONNECTION = "127.0.0.1:2181";
         private const int ZOOKEEPER_REFRESH_PERIOD_MSEC = 2000;
         private ISolrCloudStateProvider solrCloudStateProvider = null;
 

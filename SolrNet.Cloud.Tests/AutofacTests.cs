@@ -7,6 +7,7 @@ using AutofacContrib.SolrNet.Config;
 using AutofacContrib.SolrNet.SolrCloud;
 using Microsoft.Practices.Unity;
 using NUnit.Framework;
+using SolrNet.Cloud.ZooKeeperClient;
 
 namespace SolrNet.Cloud.Tests
 {
@@ -19,6 +20,15 @@ namespace SolrNet.Cloud.Tests
             module.ConfigureContainer(new FakeProvider(), builder);
             
             return builder.Build();
+        }
+
+        [Test]
+        public void Niall() {
+           var temp = new SolrCloudStateProvider("172.30.10.21:2181,172.30.10.22:2181,172.30.10.23:2181/solr");
+            temp.Init();
+           var state = temp.GetCloudState();
+            temp.GetFreshCloudState();
+
         }
 
         [Test]

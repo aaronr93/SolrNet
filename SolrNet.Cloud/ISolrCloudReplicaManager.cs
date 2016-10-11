@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 
 namespace SolrNet.Cloud {
     /// <summary>
@@ -6,8 +7,17 @@ namespace SolrNet.Cloud {
     /// for the collection matching T.
     /// Note, if using dependency injection, this is only going to be useful when implementing ICollectionResolver so that T corresponds to a collection name.
     /// </summary>
-    /// <typeparam name="T">The content schema</typeparam>
-    public interface ISolrCloudReplicaManager<T> {
+    public interface ISolrCloudReplicaManager {
+        /// <summary>
+        /// Returns collection of replicas
+        /// </summary>
+        IList<SolrCloudReplica> SelectReplicas(bool leaders, string collection = null);
+
+        string GetShardUrl(bool leader, string collection = null);
+    }
+
+    public interface ISolrCloudReplicaManager<T>
+    {
         /// <summary>
         /// Returns collection of replicas
         /// </summary>

@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using SolrNet.Cloud.ZooKeeperClient;
 
 namespace SolrNet.Cloud.Tests
 {
-    public class FakeProvider : ISolrCloudStateProvider, ISolrOperationsProvider
+    public class FakeProvider : SolrCloudStateProviderBase, ISolrCloudStateProvider, ISolrOperationsProvider
     {
         public string LastOperation { get; set; }
 
@@ -16,7 +17,7 @@ namespace SolrNet.Cloud.Tests
         public void Dispose() {
         }
 
-        public SolrCloudState GetCloudState() {
+        public override SolrCloudState GetCloudState() {
             var replica1 = new SolrCloudReplica(true, true, "leader1", "http://localhost:8983/solr1/collection1");
             var replica2 = new SolrCloudReplica(true, false, "replica1", "http://localhost:8983/solr2/collection1");
             var replica3 = new SolrCloudReplica(false, false, "replica2", "http://localhost:8983/solr3/collection1");

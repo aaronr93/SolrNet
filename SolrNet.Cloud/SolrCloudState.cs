@@ -14,9 +14,21 @@ namespace SolrNet.Cloud {
         /// <summary>
         /// Constructor
         /// </summary>
-        public SolrCloudState(IDictionary<string, SolrCloudCollection> collections) {
+        public SolrCloudState(IDictionary<string, SolrCloudCollection> collections)
+        {
             Collections = collections;
+            Aliases = new Dictionary<string, string>();
         }
+
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        public SolrCloudState(IDictionary<string, SolrCloudCollection> collections, IDictionary<string, string> aliases) {
+            Collections = collections;
+            Aliases = aliases;
+        }
+
+        public IDictionary<string, string> Aliases { get; set; }
 
         /// <summary>
         /// Returns merged cloud states

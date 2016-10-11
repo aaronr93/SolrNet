@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using Newtonsoft.Json.Linq;
@@ -11,12 +12,23 @@ namespace SolrNet.Cloud{
         /// <summary>
         /// Returns parsed solr cloud state
         /// </summary>
-        public static SolrCloudState Parse(string json)
-        {
+        public static SolrCloudState Parse(string json, string aliases = null) {
+            Dictionary<string, string> aliasDictionary = new Dictionary<string, string>();
+            if (aliases != null) {
+
+
+                var temp = JObject.Parse(aliases);
+
+                var coll = temp.Property("collection").First;
+                aliasDictionary = coll.Children().ToDictionary(x => ((Newtonsoft.Json.Linq.JProperty) x).Name, x => ((JValue) ((JProperty) x).Value).Value.ToString());
+            }
+
             return new SolrCloudState(
                 JObject.Parse(json).Properties()
                     .Select(BuildCollection)
-                    .ToDictionary(colection => colection.Name, StringComparer.OrdinalIgnoreCase));
+                    .ToDictionary(colection => colection.Name, StringComparer.OrdinalIgnoreCase),
+                aliasDictionary
+                );
         }
 
         /// <summary>
@@ -30,6 +42,18 @@ namespace SolrNet.Cloud{
                 shards.Properties()
                     .Select(property => BuildShard(json.Name, property))
                     .ToDictionary(shard => shard.Name, StringComparer.OrdinalIgnoreCase));
+        }
+
+        private static string BuildAliases(JProperty json)
+        {
+            var aliases = (JObject)json.Value["collection"];
+            //return 
+            //    json.Name,
+            //    BuildRouter(json.Value["router"] as JObject),
+            //    shards.Properties()
+            //        .Select(property => BuildShard(json.Name, property))
+            //        .ToDictionary(shard => shard.Name, StringComparer.OrdinalIgnoreCase));
+            return "";
         }
 
         /// <summary>
