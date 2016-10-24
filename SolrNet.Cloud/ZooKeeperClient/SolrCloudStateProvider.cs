@@ -32,7 +32,6 @@ namespace SolrNet.Cloud.ZooKeeperClient
             }
 
             if (derivedCollectionName != null && !state.Collections.ContainsKey(derivedCollectionName)) {
-
                 throw new ApplicationException(string.Format("Didn't get '{0}' collection state from zookeeper.", derivedCollectionName));
             }
 
@@ -49,15 +48,19 @@ namespace SolrNet.Cloud.ZooKeeperClient
             return replicas;
         }
 
-        public string GetShardUrl(bool leader, string collectionName = null) {
+        public string GetShardUrl(bool leader, string collectionName = null, bool autoRefresh = true) {
             var replicas = SelectReplicas(leader, collectionName);
 
             if (leader && replicas.Count == 0) {
-                //
                 replicas = SelectReplicas(false, collectionName);
             }
 
             if (replicas.Count == 0) {
+                if (autoRefresh) {
+                    //try to force zookeeper to refresh. If the core isn't there after a refresh then it really is down and its ok to throw an exception
+                    GetFreshCloudState();
+                    GetShardUrl(leader, collectionName, false);
+                }
                 throw new ApplicationException(string.Format("No appropriate node was selected to perform the operation on collection {0} and leader = {1}", collectionName, leader));
             }
 
@@ -66,6 +69,7 @@ namespace SolrNet.Cloud.ZooKeeperClient
 
         public abstract SolrCloudState GetCloudState();
 
+        public abstract SolrCloudState GetFreshCloudState();
     }
 
 
@@ -162,7 +166,7 @@ namespace SolrNet.Cloud.ZooKeeperClient
         /// (causes reloading all cloud data and too slow to use in production)
         /// </summary>
         /// <returns>Solr Cloud State</returns>
-        public SolrCloudState GetFreshCloudState()
+        public override SolrCloudState GetFreshCloudState()
         {
             SynchronizedUpdate(cleanZookeeperConnection: true);
             return GetCloudState();
@@ -261,7 +265,7 @@ namespace SolrNet.Cloud.ZooKeeperClient
 
             var collectionsState =
                 data != null
-                ? SolrCloudStateParser.Parse(Encoding.Default.GetString(data), Encoding.Default.GetString(aliases))
+                ? SolrCloudStateParser.Parse(Encoding.Default.GetString(data), aliases==null?null:Encoding.Default.GetString(aliases))
                 : new SolrCloudState(new Dictionary<string, SolrCloudCollection>());
 
             

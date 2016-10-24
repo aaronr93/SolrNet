@@ -53,6 +53,10 @@ namespace SolrNet.Cloud.Tests
                 });
         }
 
+        public override SolrCloudState GetFreshCloudState() {
+            return GetCloudState();
+        }
+
         public void Init() {
         }
 

@@ -13,7 +13,7 @@ namespace SolrNet.Cloud {
         /// </summary>
         IList<SolrCloudReplica> SelectReplicas(bool leaders, string collection = null);
 
-        string GetShardUrl(bool leader, string collection = null);
+        string GetShardUrl(bool leader, string collection = null, bool autoRefresh = true);
     }
 
     public interface ISolrCloudReplicaManager<T>
