@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Threading.Tasks;
 using SolrNet.Exceptions;
 using SolrNet.Utils;
 
@@ -16,6 +17,11 @@ namespace SolrNet.Impl
 	{
 		private readonly ISolrConnection conn;
 		private readonly string serverUrl;
+
+	    /// <summary>
+	    /// Default timeout in milliseconds
+	    /// </summary>
+	    public static int Timeout { get; set; } = 10000;
 
 		public PostSolrConnection(ISolrConnection conn, string serverUrl)
 		{
@@ -41,17 +47,21 @@ namespace SolrNet.Impl
 			request.ContentLength = Encoding.UTF8.GetByteCount(qs);
 			request.ProtocolVersion = HttpVersion.Version11;
 			request.KeepAlive = true;
-			try
-			{
-				using (var postParams = request.GetRequestStream())
-				using (var sw = new StreamWriter(postParams))
-					sw.Write(qs);
-				using (var response = request.GetResponse())
-				using (var responseStream = response.GetResponseStream())
-				using (var sr = new StreamReader(responseStream, Encoding.UTF8, true))
-					return sr.ReadToEnd();
+			try {
+			    using (var postParamsTask = request.GetRequestStreamAsync().WithTimeout(new TimeSpan(0,0,0,0, Timeout))) {
+			        postParamsTask.Wait();
+			        using (var postParams = postParamsTask.Result)
+			        using (var sw = new StreamWriter(postParams))
+			            sw.Write(qs);
+			        using (var responseTask = request.GetResponseAsync()) {
+                        responseTask.Wait();
+			            using (var responseStream = responseTask.Result.GetResponseStream())
+			            using (var sr = new StreamReader(responseStream, Encoding.UTF8, true))
+			                return sr.ReadToEnd();
+			        }
+			    }
 			}
-			catch (WebException e)
+			catch (Exception e)
 			{
 				throw new SolrConnectionException(e);
 			}
@@ -62,4 +72,18 @@ namespace SolrNet.Impl
 		}
 
 	}
+
+    public static class AsyncExtensions
+    {
+        public static Task<T> WithTimeout<T>(this Task<T> task, TimeSpan timeout)
+        {
+            return Task.Factory.StartNew(() =>
+            {
+                var b = task.Wait((int)timeout.TotalMilliseconds);
+                if (b) return task.Result;
+                throw new WebException("The operation has timed out", WebExceptionStatus.Timeout);
+            });
+        }
+    }
+
 }
