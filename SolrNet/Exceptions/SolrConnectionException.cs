@@ -38,6 +38,15 @@ namespace SolrNet.Exceptions {
         /// <summary>
         /// Error connecting to Solr.
         /// </summary>
+        /// <param name="message"></param>
+        /// <param name="url">the url on which the exception occured</param>
+        public SolrConnectionException(string message, string url) : base(message) {
+            this.url = url;
+        }
+
+        /// <summary>
+        /// Error connecting to Solr.
+        /// </summary>
         /// <param name="innerException"></param>
 		public SolrConnectionException(Exception innerException) : base(innerException) {}
 

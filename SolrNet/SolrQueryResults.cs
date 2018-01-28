@@ -77,6 +77,8 @@ namespace SolrNet {
         /// </summary>
         public IDictionary<string, GroupedResults<T>> Grouping { set; get; }
 
+        public string RawResult { get; set; }
+
         /// <summary>
         /// Debug results
         /// </summary>
